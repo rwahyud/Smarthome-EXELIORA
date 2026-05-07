@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IoT Dashboard</title>
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/assets/image/Logo pwa.jpg" />
+  <link rel="icon" type="image/jpeg" href="/assets/image/Logo pwa.jpg" />
+  <link rel="shortcut icon" href="/assets/image/Logo pwa.jpg" />
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    #welcome-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
+    }
+    #welcome-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .welcome-content {
+      text-align: center;
+      color: #e6eef6;
+    }
+    .welcome-content h1 {
+      font-size: 32px;
+      margin: 0 0 16px 0;
+      color: #06b6d4;
+    }
+    .welcome-content p {
+      font-size: 16px;
+      color: #9ca3af;
+      margin: 0 0 32px 0;
+      max-width: 400px;
+    }
+    .welcome-content button {
+      padding: 12px 32px;
+      font-size: 16px;
+      background: linear-gradient(90deg, #06b6d4, #0891b2);
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .welcome-content button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(6, 182, 212, 0.3);
+    }
+    .welcome-logo {
+      width: 150px;
+      height: 150px;
+      margin-bottom: 24px;
+      border-radius: 16px;
+      object-fit: contain;
+    }
+    
+    #loading-indicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #06b6d4, #38bdf8);
+      width: 0%;
+      transition: width 0.3s ease;
+      z-index: 1000;
+    }
+    #loading-indicator.active {
+      animation: loading-pulse 1.5s infinite;
+    }
+    @keyframes loading-pulse {
+      0% { width: 10%; }
+      50% { width: 70%; }
+      100% { width: 90%; }
+    }
+    
+    #notifications-container {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      max-width: 350px;
+      z-index: 2000;
+      pointer-events: none;
+    }
+    .notification {
+      background: #1e293b;
+      border-left: 4px solid #06b6d4;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+      color: #e6eef6;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      animation: slide-in 0.3s ease;
+      pointer-events: all;
+    }
+    .notification.error {
+      border-left-color: #ef4444;
+      background: #7f1d1d;
+    }
+    .notification.warning {
+      border-left-color: #f59e0b;
+      background: #78350f;
+    }
+    .notification.success {
+      border-left-color: #10b981;
+      background: #064e3b;
+    }
+    @keyframes slide-in {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    @keyframes slide-out {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+    .notification.remove {
+      animation: slide-out 0.3s ease forwards;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-indicator"></div>
+  <div id="notifications-container"></div>
+  
+  <div id="welcome-screen">
+    <div class="welcome-content">
+      <img src="/assets/image/Logo pwa.jpg" alt="Logo" class="welcome-logo" />
+      <h1>IoT Dashboard</h1>
+      <p>Selamat datang! Kelola sensor dan kontrol perangkat rumah pintar Anda dengan mudah.</p>
+      <button onclick="goToDashboard()">Masuk ke Dashboard</button>
+    </div>
+  </div>
+  
+  <div class="container">
+    <header>
+      <h1>IoT Dashboard — Sensor & Kontrol</h1>
+      <div class="controls" id="serial-controls">
+        <div class="small">Status koneksi: <span id="conn-status">disconnected</span></div>
+        <select id="baud-rate" class="toggle" aria-label="Baud rate serial">
+          <option value="9600">9600</option>
+          <option value="115200" selected>115200</option>
+          <option value="57600">57600</option>
+          <option value="38400">38400</option>
+        </select>
+        <button id="serial-connect" class="toggle">Connect Arduino</button>
+        <button id="serial-disconnect" class="toggle">Disconnect</button>
+      </div>
+    </header>
+
+    <section class="grid">
+      <div class="card">
+        <h3>Suhu</h3>
+        <div class="value" id="temp-value">-- °C</div>
+        <div class="small">Sensor suhu lingkungan</div>
+      </div>
+
+      <div class="card">
+        <h3>Kelembapan</h3>
+        <div class="value" id="hum-value">-- %</div>
+        <div class="small">Sensor kelembapan</div>
+      </div>
+
+      <div class="card">
+        <h3>Cahaya</h3>
+        <div class="value" id="light-value">-- lx</div>
+        <div class="small">Intensitas cahaya</div>
+      </div>
+
+      <div class="card">
+        <h3>Gas</h3>
+        <div class="value" id="gas-value">--</div>
+        <div class="small">Nilai sensor gas </div>
+      </div>
+
+      <div class="card">
+        <h3>Buzzer</h3>
+        <div class="value"><span class="status-dot" id="buzzer-dot" style="background:var(--warn)"></span><span id="buzzer-status">--</span></div>
+        <div class="small">Status buzzer (aktif / tidak)</div>
+      </div>
+
+      <div class="card">
+        <h3>Lampu & Kipas</h3>
+        <div style="margin:6px 0" class="row">
+          <div class="col">
+            <div class="small">Lampu</div>
+            <div class="value"><span class="status-dot" id="lamp-dot" style="background:gray"></span><span id="lamp-status">--</span></div>
+          </div>
+          <div class="col">
+            <div class="small">Kipas</div>
+            <div class="value"><span class="status-dot" id="fan-dot" style="background:gray"></span><span id="fan-status">--</span></div>
+          </div>
+        </div>
+        <div style="margin-top:10px" class="controls">
+          <button id="lamp-toggle" class="toggle"><span id="lamp-toggle-text">OFF</span></button>
+          <button id="fan-toggle" class="toggle"><span id="fan-toggle-text">OFF</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="serial-debug-section" style="margin-top:14px">
+      <h3>Debug Serial</h3>
+      <div class="small">Baris terakhir dari Arduino, jika kamu tetap mengirim log via serial:</div>
+      <pre id="serial-log" class="serial-log">(belum ada data)</pre>
+    </section>
+
+    <footer style="margin-top:18px;color:var(--muted);font-size:13px">
+      PT Exeliora Teknologi Indonesia
+      <div class="small" id="flow-hint" style="margin-top:8px">
+      Instagram : Rwahydiii_ 
+      </div>
+    </footer>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
