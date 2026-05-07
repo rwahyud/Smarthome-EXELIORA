@@ -3,11 +3,13 @@ node_modules/
 package-lock.json
 yarn.lock
 
-# Firebase configuration (sensitive)
-.firebaserc
+# Secrets & Credentials
 .env
 .env.local
 .env.*.local
+secrets.h
+SmartHome_ESP32/secrets.h
+.firebaserc
 
 # IDE / Editor
 .vscode/

@@ -17,9 +17,12 @@ function updateToggleButtonText(){
   if (fanBtn) fanBtn.textContent = state.fan ? 'ON' : 'OFF'
 }
 
+// ⚠️ JANGAN HARDCODE CREDENTIALS!
+// Setup credentials melalui environment variables atau .env.local
+// Gunakan build tool (Webpack/Vite) untuk inject values saat build time
 const firebaseConfig = {
-  apiKey: "AIzaSyCMi_dNUlMC2yKNgzOtLtkQiGiM1dAVOK8",
-  databaseURL: "https://skripsi-smarthome-e6971-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "YOUR_API_KEY_HERE",
+  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL || "https://YOUR_PROJECT.firebasedatabase.app/"
 }
 
 firebase.initializeApp(firebaseConfig)

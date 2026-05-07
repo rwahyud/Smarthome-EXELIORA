@@ -5,8 +5,18 @@
 #include <time.h> 
 
 // --- KONFIGURASI FIREBASE ---
-#define API_KEY "AIzaSyCMi_dNUlMC2yKNgzOtLtkQiGiM1dAVOK8"
-#define DATABASE_URL "https://skripsi-smarthome-e6971-default-rtdb.asia-southeast1.firebasedatabase.app/"
+// ⚠️ JANGAN HARDCODE CREDENTIALS! 
+// Buat file 'secrets.h' di folder yang sama dengan struktur:
+// #ifndef SECRETS_H
+// #define SECRETS_H
+// #define API_KEY "your_api_key_here"
+// #define DATABASE_URL "https://your-project.firebasedatabase.app/"
+// #endif
+// Kemudian uncomment #include "secrets.h" di bawah
+
+#include "secrets.h"  // ⬅️ Uncomment setelah buat secrets.h
+// #define API_KEY "your_api_key_here"
+// #define DATABASE_URL "https://your-project.firebasedatabase.app/"
 
 // --- PIN DEFINISI ---
 #define DHTPIN 4
